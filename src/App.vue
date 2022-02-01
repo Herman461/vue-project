@@ -5,7 +5,7 @@
       <div class="app__row">
         <div class="app__column">
           <div class="app__cards app-cards">
-            <div :key="card.number" class="app-cards__item" v-for="(card, index) in cards.filter(item => item.isInLeftColumn)">
+            <div @click="addToRightColumn(card, index)" :key="card.number" class="app-cards__item" v-for="(card, index) in leftColumnCards">
               <img :src="card.imageSrc" alt="">
               <span>{{ card.number }}</span>
             </div>
@@ -13,7 +13,9 @@
         </div>
         <div class="app__column">
           <div class="app__cards app-cards">
-            <div :key="card.number" class="app-cards__item" v-for="card in cards.filter(item => !item.isInLeftColumn)">
+            <div @click="addToLeftColumn(card, index)" :key="card.number" class="app-cards__item" v-for="(card, index) in rightColumnCards">
+              <img :src="card.imageSrc" alt="">
+              <span>{{ card.number }}</span>
             </div>
           </div>
         </div>
@@ -29,7 +31,8 @@ export default {
     return {
       totalCardsCount: 10000,
       loadedCardsCount: 0,
-      cards: []
+      leftColumnCards: [],
+      rightColumnCards: []
     }
   },
   mounted() {
@@ -40,7 +43,7 @@ export default {
       if (this.loadedCardsCount > this.totalCardsCount) return;
 
       for (let i = 0; i < cardsCount; ++i) {
-        const lastCardNumber = this.cards[this.cards.length - 1]?.number;
+        const lastCardNumber = this.leftColumnCards[this.leftColumnCards.length - 1]?.number;
 
         const card = {
           imageSrc: require("./assets/img/01.jpg"),
@@ -48,10 +51,21 @@ export default {
           number: lastCardNumber ? lastCardNumber + 1 : 1
         };
 
-        this.cards.push(card);
+        this.leftColumnCards.push(card);
       }
 
+    },
+    addToLeftColumn(card, cardIndex) {
+      this.rightColumnCards.splice(cardIndex, 1);
+      this.leftColumnCards.push(card);
+    },
+    addToRightColumn(card, cardIndex) {
+      this.leftColumnCards.splice(cardIndex, 1);
+      this.rightColumnCards.push(card);
     }
+  },
+  computed: {
+    
   }
 }
 </script>
@@ -76,6 +90,7 @@ body {
     padding: 0 10px;
     margin-bottom: 20px;
     position: relative;
+    cursor: pointer;
     img {
       object-fit: cover;
       width: 100%;
