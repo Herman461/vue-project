@@ -2,12 +2,13 @@
   <div
       class="tooltip"
       ref="tooltip"
-      :style="{ top: coords.top + 'px', left: coords.left + 'px'}"
+      :style="{top: this.coords.top + 'px', left: this.coords.left + 'px'}"
   >
     <div class="tooltip__body"
          v-if="isShown"
 
     >
+      <span :style="trianglePosition"></span>
       <v-card :card-data="cardData"/>
     </div>
 
@@ -20,9 +21,6 @@ import VCard from "./Card";
 export default {
   name: "v-tooltip",
   components: {VCard},
-  // props: {
-  //   cardData: {type: Object}
-  // },
   data() {
     return {
       isShown: false,
@@ -30,7 +28,8 @@ export default {
         left: 0,
         top: 0
       },
-      cardData: {}
+      cardData: {},
+      placement: ""
     }
   },
   methods: {
@@ -44,12 +43,25 @@ export default {
     setPosition(target) {
       const coords = target.getBoundingClientRect()
 
-      this.coords.left = coords.left + (target.offsetWidth - this.$refs.tooltip.offsetWidth) / 2;
-      if (this.coords.left < 0) this.coords.left = 15;
+      this.coords.left = coords.left + (target.offsetWidth - this.$refs.tooltip.offsetWidth) / 2
+      if (this.coords.left < 0) this.coords.left = 15
 
       this.coords.top = coords.top - this.$refs.tooltip.offsetHeight - 25
+      this.placement = 'bottom'
       if (this.coords.top < 0) {
-        this.coords.top = coords.top + target.offsetHeight + 25;
+        this.coords.top = coords.top + target.offsetHeight + 25
+        this.placement = 'top'
+      }
+
+    }
+  },
+  computed: {
+    trianglePosition() {
+      return {
+        borderBottom: this.placement === 'top' ? '20px solid #cbc9c9' : '',
+        borderTop: this.placement === 'bottom' ? '20px solid #cbc9c9' : '',
+        top: this.placement === 'top' ? "-43px" : "",
+        bottom: this.placement === 'bottom' ? "-43px" : "",
       }
     }
   }
@@ -65,16 +77,13 @@ export default {
   height: 300px;
   &__body {
     position: relative;
-    border: 3px solid #fff;
+    border: 3px solid #cbc9c9;
     height: 100%;
-    &::after {
-      content: '';
+    span {
       position: absolute;
       left: 50%;
       transform: translate(-50%, 0);
-      top: -42px;
       border: 20px solid transparent;
-      border-bottom: 20px solid #fff;
     }
   }
 }
@@ -91,8 +100,8 @@ export default {
       width: 30px;
       height: 30px;
       font-size: 18px;
-      top: -12px;
-      right: -7px;
+      top: -14px;
+      right: -9px;
     }
   }
 }

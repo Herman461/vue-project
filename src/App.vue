@@ -4,29 +4,38 @@
       <h1 class="app__title">Containers</h1>
       <div class="app__row">
         <div class="app__column">
-          <ul class="app__cards app-cards">
-            <li
-                @mouseover="showTooltip(card); setPosition($event);"
-                @mouseout="hideTooltip"
-                @click="addToRightColumn(card, index)"
-                :key="card.number" class="app-cards__item"
-                v-for="(card, index) in leftColumnCards"
-            >
-              <v-card :card-data="card" />
-            </li>
-          </ul>
+          <button @click="sortLeftColumnCards" type="button" class="app__sort-btn">Sort</button>
+          <div ref="column" @scroll="handleScroll" class="app__cards app-cards">
+            <ul class="app-cards__list">
+              <li
+                  @mouseenter="showTooltip(card); setPosition($event);"
+                  @mouseleave="hideTooltip"
+                  @click="addToRightColumn(card, index)"
+                  :key="card.number" class="app-cards__item"
+                  v-for="(card, index) in leftColumnCards"
+              >
+                <v-card :card-data="card" />
+              </li>
+            </ul>
+          </div>
         </div>
         <div class="app__column">
-          <ul class="app__cards app-cards">
-            <li
-                @click="addToLeftColumn(card, index)"
-                :key="card.number"
-                class="app-cards__item"
-                v-for="(card, index) in rightColumnCards"
-            >
-              <v-card :card-data="card" />
-            </li>
-          </ul>
+          <button @click="sortRightColumnCards" type="button" class="app__sort-btn">Sort</button>
+          <div class="app__cards app-cards">
+            <ul class="app-cards__list">
+              <li
+                  @mouseenter="showTooltip(card); setPosition($event);"
+                  @mouseleave="hideTooltip"
+                  @click="addToLeftColumn(card, index)"
+                  :key="card.number"
+                  class="app-cards__item"
+                  v-for="(card, index) in rightColumnCards"
+              >
+                <v-card :card-data="card" />
+              </li>
+            </ul>
+          </div>
+
         </div>
       </div>
     </div>
@@ -42,16 +51,29 @@ export default {
   components: {VCard, VTooltip},
   data() {
     return {
-      totalCardsCount: 10000,
+      totalCardsCount: 100,
       loadedCardsCount: 0,
       leftColumnCards: [],
       rightColumnCards: []
     }
   },
   mounted() {
-    this.loadCards()
+    if (this.$refs.column.clientHeight === this.$refs.column.scrollHeight) {
+      this.loadCards(40)
+    }
   },
   methods: {
+    sortRightColumnCards(cards) {
+      this.rightColumnCards.sort((a, b) => a.number - b.number)
+    },
+    sortLeftColumnCards(cards) {
+      this.leftColumnCards.sort((a, b) => a.number - b.number)
+    },
+    handleScroll(e) {
+      if (this.$refs.column.scrollTop + this.$refs.column.clientHeight > this.$refs.column.scrollHeight - 120) {
+        this.loadCards()
+      }
+    },
     showTooltip(cardData) {
       this.$refs.tooltip.show(cardData)
     },
@@ -59,25 +81,29 @@ export default {
       this.$refs.tooltip.hide()
     },
     loadCards(cardsCount = 20) {
-      if (this.loadedCardsCount > this.totalCardsCount) return;
+      if (this.loadedCardsCount >= this.totalCardsCount) return
+
+      this.loadedCardsCount += cardsCount
 
       for (let i = 0; i < cardsCount; ++i) {
-        const lastCardNumber = this.leftColumnCards[this.leftColumnCards.length - 1]?.number;
+        const lastCardNumber = this.leftColumnCards[this.leftColumnCards.length - 1]?.number
 
         const card = {
           imageSrc: require("./assets/img/01.jpg"),
           number: lastCardNumber ? lastCardNumber + 1 : 1
         };
 
-        this.leftColumnCards.push(card);
+        this.leftColumnCards.push(card)
       }
 
     },
     addToLeftColumn(card, cardIndex) {
+      this.hideTooltip()
       this.rightColumnCards.splice(cardIndex, 1);
       this.leftColumnCards.push(card);
     },
     addToRightColumn(card, cardIndex) {
+      this.hideTooltip()
       this.leftColumnCards.splice(cardIndex, 1);
       this.rightColumnCards.push(card);
     },
@@ -99,14 +125,19 @@ body {
   font-family: "Roboto", sans-serif;
 }
 .app-cards {
-  display: flex;
-  flex-wrap: wrap;
-  border-radius: 10px;
-  padding: 25px 20px;
+
   background-color: #504f4f;
-  min-height: 150px;
-  margin: 0 -10px;
+  overflow: auto;
+  border-radius: 10px;
+  min-height: calc(100vh - 195px);
+  max-height: calc(100vh - 195px);
+  &__list {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 25px 20px;
+  }
   &__item {
+    height: 100px;
     flex: 0 1 25%;
     padding: 0 10px;
     margin-bottom: 20px;
@@ -137,6 +168,31 @@ body {
   &__column {
     flex: 0 1 50%;
     padding: 0 30px;
+  }
+  &__sort-btn {
+    font-size: 18px;
+    letter-spacing: 0.025em;
+    color: #fff;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 45px;
+    font-weight: 700;
+    padding-left: 35px;
+    padding-right: 35px;
+    background-color: #504f4f;
+    border-radius: 4px;
+    transition: all 0.3s ease 0s;
+    &:not(:last-child) {
+      margin-bottom: 25px;
+    }
+    @media (any-hover: hover) {
+      &:hover {
+        background-color: #fff;
+        color: #504f4f;
+      }
+
+    }
   }
 }
 </style>
