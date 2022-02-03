@@ -4,29 +4,42 @@
       <h1 class="app__title">Containers</h1>
       <div class="app__row">
         <div class="app__column">
-          <div class="app__cards app-cards">
-            <div @click="addToRightColumn(card, index)" :key="card.number" class="app-cards__item" v-for="(card, index) in leftColumnCards">
-              <img :src="card.imageSrc" alt="">
-              <span>{{ card.number }}</span>
-            </div>
-          </div>
+          <ul class="app__cards app-cards">
+            <li
+                @mouseover="showTooltip(card); setPosition($event);"
+                @mouseout="hideTooltip"
+                @click="addToRightColumn(card, index)"
+                :key="card.number" class="app-cards__item"
+                v-for="(card, index) in leftColumnCards"
+            >
+              <v-card :card-data="card" />
+            </li>
+          </ul>
         </div>
         <div class="app__column">
-          <div class="app__cards app-cards">
-            <div @click="addToLeftColumn(card, index)" :key="card.number" class="app-cards__item" v-for="(card, index) in rightColumnCards">
-              <img :src="card.imageSrc" alt="">
-              <span>{{ card.number }}</span>
-            </div>
-          </div>
+          <ul class="app__cards app-cards">
+            <li
+                @click="addToLeftColumn(card, index)"
+                :key="card.number"
+                class="app-cards__item"
+                v-for="(card, index) in rightColumnCards"
+            >
+              <v-card :card-data="card" />
+            </li>
+          </ul>
         </div>
       </div>
     </div>
+    <v-tooltip ref="tooltip" />
   </div>
 </template>
 
 <script>
+import VTooltip from "./views/Tooltip";
+import VCard from "./views/Card";
 export default {
   name: "app",
+  components: {VCard, VTooltip},
   data() {
     return {
       totalCardsCount: 10000,
@@ -39,6 +52,12 @@ export default {
     this.loadCards()
   },
   methods: {
+    showTooltip(cardData) {
+      this.$refs.tooltip.show(cardData)
+    },
+    hideTooltip() {
+      this.$refs.tooltip.hide()
+    },
     loadCards(cardsCount = 20) {
       if (this.loadedCardsCount > this.totalCardsCount) return;
 
@@ -47,7 +66,6 @@ export default {
 
         const card = {
           imageSrc: require("./assets/img/01.jpg"),
-          isInLeftColumn: true,
           number: lastCardNumber ? lastCardNumber + 1 : 1
         };
 
@@ -62,10 +80,13 @@ export default {
     addToRightColumn(card, cardIndex) {
       this.leftColumnCards.splice(cardIndex, 1);
       this.rightColumnCards.push(card);
+    },
+    setPosition(event) {
+      this.$refs.tooltip.setPosition(event.target)
     }
   },
   computed: {
-    
+
   }
 }
 </script>
@@ -91,25 +112,6 @@ body {
     margin-bottom: 20px;
     position: relative;
     cursor: pointer;
-    img {
-      object-fit: cover;
-      width: 100%;
-      height: 100px;
-    }
-    span {
-      background-color: #363636;
-      border-radius: 50%;
-      position: absolute;
-      top: -7px;
-      font-size: 12px;
-      right: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 20px;
-      min-width: 20px;
-      padding: 1px 3px;
-    }
   }
 }
 .app {
